@@ -226,9 +226,17 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 		return nil, err
 	}
 
-	ownContainers := make([]*Container, len(containers))
+	ownContainers := make([]*Container, 0, len(containers))
 
-	for i, ctr := range containers {
+	for _, ctr := range containers {
+		// If a project name is specified via -p flag, filter containers to only show those from that project
+		if c.Config.ProjectName != "" {
+			containerProject := ctr.Labels["com.docker.compose.project"]
+			if containerProject != c.Config.ProjectName {
+				continue
+			}
+		}
+
 		var newContainer *Container
 
 		// check if we already have data stored against the container
@@ -267,7 +275,7 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 		newContainer.ContainerNumber = ctr.Labels["com.docker.compose.container"]
 		newContainer.OneOff = ctr.Labels["com.docker.compose.oneoff"] == "True"
 
-		ownContainers[i] = newContainer
+		ownContainers = append(ownContainers, newContainer)
 	}
 
 	c.SetContainerDetails(ownContainers)

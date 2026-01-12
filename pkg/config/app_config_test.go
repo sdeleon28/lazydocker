@@ -9,7 +9,7 @@ import (
 
 func TestDockerComposeCommandNoFiles(t *testing.T) {
 	composeFiles := []string{}
-	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "", "projectDir")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -23,7 +23,7 @@ func TestDockerComposeCommandNoFiles(t *testing.T) {
 
 func TestDockerComposeCommandSingleFile(t *testing.T) {
 	composeFiles := []string{"one.yml"}
-	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "", "projectDir")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -37,7 +37,7 @@ func TestDockerComposeCommandSingleFile(t *testing.T) {
 
 func TestDockerComposeCommandMultipleFiles(t *testing.T) {
 	composeFiles := []string{"one.yml", "two.yml", "three.yml"}
-	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "", "projectDir")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -49,10 +49,38 @@ func TestDockerComposeCommandMultipleFiles(t *testing.T) {
 	}
 }
 
+func TestDockerComposeCommandWithProjectName(t *testing.T) {
+	composeFiles := []string{}
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "myproject", "projectDir")
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	actual := conf.UserConfig.CommandTemplates.DockerCompose
+	expected := "docker compose -p myproject"
+	if actual != expected {
+		t.Fatalf("Expected %s but got %s", expected, actual)
+	}
+}
+
+func TestDockerComposeCommandWithFilesAndProjectName(t *testing.T) {
+	composeFiles := []string{"one.yml", "two.yml"}
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "myproject", "projectDir")
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	actual := conf.UserConfig.CommandTemplates.DockerCompose
+	expected := "docker compose -f one.yml -f two.yml -p myproject"
+	if actual != expected {
+		t.Fatalf("Expected %s but got %s", expected, actual)
+	}
+}
+
 func TestWritingToConfigFile(t *testing.T) {
 	// init the AppConfig
 	emptyComposeFiles := []string{}
-	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, emptyComposeFiles, "projectDir")
+	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, emptyComposeFiles, "", "projectDir")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}

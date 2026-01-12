@@ -78,6 +78,10 @@ func (gui *Gui) refreshProject() error {
 }
 
 func (gui *Gui) getProjectName() string {
+	if gui.Config.ProjectName != "" {
+		return gui.Config.ProjectName
+	}
+
 	projectName := path.Base(gui.Config.ProjectDir)
 	if gui.DockerCommand.InDockerComposeProject {
 		for _, service := range gui.Panels.Services.List.GetAllItems() {
